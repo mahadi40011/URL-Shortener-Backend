@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const crypto = require("crypto");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const admin = require("firebase-admin");
 const port = process.env.PORT || 3000;
@@ -83,7 +84,17 @@ async function run() {
           });
         }
 
-        const shortCode = "er34kjh7"
+        let shortCode;
+        let isUnique = false;
+
+        while (!isUnique) {
+          shortCode = crypto.randomBytes(4).toString("hex");
+          const alreadyUsed = await urlsCollection.findOne({ shortCode });
+
+          if (!alreadyUsed) {
+            isUnique = true;
+          }
+        }
 
         const newUrlEntry = {
           email,
