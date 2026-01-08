@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const { customAlphabet } = require("nanoid");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const admin = require("firebase-admin");
 const port = process.env.PORT || 3000;
 const decoded = Buffer.from(process.env.FB_SERVICE_KEY, "base64").toString(
@@ -109,6 +109,39 @@ async function run() {
         res.status(500).send({
           success: false,
           message: "Internal Server Error. Could not fetch URLs.",
+        });
+      }
+    });
+
+    // Delete a specific URL entry
+    app.delete("/delete-url/:id", verifyJWT, async (req, res) => {
+      try {
+        const id = req.params.id;
+        const email = req.tokenEmail;
+
+        const query = {
+          _id: new ObjectId(id),
+          email,
+        };
+
+        const result = await urlsCollection.deleteOne(query);
+
+        if (result.deletedCount === 1) {
+          res.status(200).send({
+            success: true,
+            message: "URL deleted successfully",
+          });
+        } else {
+          res.status(404).send({
+            success: false,
+            message: "URL not found or you don't have permission",
+          });
+        }
+      } catch (error) {
+        console.error("Delete Error:", error);
+        res.status(500).send({
+          success: false,
+          message: "Internal server error",
         });
       }
     });
