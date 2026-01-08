@@ -98,6 +98,36 @@ async function run() {
       }
     });
 
+    // Dynamic route for redirect to the original URL
+    app.get("/:shortCode", async (req, res) => {
+      try {
+        const { shortCode } = req.params;
+        const urlEntry = await urlsCollection.findOne({ shortCode: shortCode });
+
+        if (urlEntry) {
+          await urlsCollection.updateOne(
+            { shortCode: shortCode },
+            { $inc: { totalVisit: 1 } }
+          );
+
+          return res.redirect(urlEntry.longUrl);
+        } else {
+          return res.status(404).send(`
+        <html>
+          <body style="text-align: center; padding-top: 50px; font-family: sans-serif;">
+            <h1 style="color: #ff4d4d;">404 - Link Not Found!</h1>
+            <p>Sorry, the short link you are looking for is invalid or has expired.</p>
+            <a href="${process.env.CLIENT_DOMAIN}">Go to Homepage</a>
+          </body>
+        </html>
+      `);
+        }
+      } catch (error) {
+        console.error("Redirect error:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
