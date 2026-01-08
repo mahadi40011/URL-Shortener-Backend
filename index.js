@@ -1,6 +1,5 @@
 require("dotenv").config();
 const express = require("express");
-const { customAlphabet } = require("nanoid");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const admin = require("firebase-admin");
@@ -27,12 +26,10 @@ app.use(express.json());
 // jwt middlewares
 const verifyJWT = async (req, res, next) => {
   const token = req?.headers?.authorization?.split(" ")[1];
-  // console.log(token);
   if (!token) return res.status(401).send({ message: "Unauthorized Access!" });
   try {
     const decoded = await admin.auth().verifyIdToken(token);
     req.tokenEmail = decoded.email;
-    // console.log({decoded});
     next();
   } catch (err) {
     console.log(err);
@@ -57,8 +54,6 @@ async function run() {
     app.post("/generate-shortCode", verifyJWT, async (req, res) => {
       const email = req.tokenEmail;
       const { longUrl } = req.body;
-      const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
-      const generateShortCode = customAlphabet(alphabet, 8);
 
       if (!longUrl) {
         return res.status(400).send({ message: "Long URL is required" });
@@ -88,7 +83,7 @@ async function run() {
           });
         }
 
-        const shortCode = generateShortCode();
+        const shortCode = "er34kjh7"
 
         const newUrlEntry = {
           email,
@@ -189,10 +184,10 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
   } finally {
     // Ensures that the client will close when you finish/error
   }
