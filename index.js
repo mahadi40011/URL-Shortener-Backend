@@ -65,8 +65,20 @@ async function run() {
       }
 
       try {
+        const userUrlCount = await urlsCollection.countDocuments({
+          email,
+        });
+
+        if (userUrlCount >= 100) {
+          return res.status(429).send({
+            message:
+              "You have reached your free limit. Please upgrade to create more links.",
+          });
+        }
+
         const existingEntry = await urlsCollection.findOne({
-          longUrl: longUrl,
+          longUrl,
+          email,
         });
 
         if (existingEntry) {
