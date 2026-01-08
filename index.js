@@ -98,6 +98,21 @@ async function run() {
       }
     });
 
+    // get all urls data filtered by user email
+    app.get("/all-urls", verifyJWT, async (req, res) => {
+      try {
+        const email = req.tokenEmail;
+        const result = await urlsCollection.find({ email }).toArray();
+        res.status(200).send(result);
+      } catch (error) {
+        console.error("Error fetching URLs:", error);
+        res.status(500).send({
+          success: false,
+          message: "Internal Server Error. Could not fetch URLs.",
+        });
+      }
+    });
+
     // Dynamic route for redirect to the original URL
     app.get("/:shortCode", async (req, res) => {
       try {
